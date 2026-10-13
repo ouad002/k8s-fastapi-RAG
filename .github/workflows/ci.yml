@@ -12,10 +12,10 @@ jobs:
               uses: actions/checkout@v6
 
             - name: Build docker image
-              run : docker build -t k8s-fastapi:ci
+              run : docker build -t k8s-fastapi:ci .
             
             - name: Start container
-              run : -d -p 8000:8000 --name api k8s-fastapi:ci
+              run : docker run -d -p 8000:8000 --name api k8s-fastapi:ci
 
             - name: Smoke test endpoints
               run: |
