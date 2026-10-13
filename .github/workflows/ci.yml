@@ -1,0 +1,35 @@
+name : CI
+
+on :
+    push:
+        branches: [master]
+    pull_request:
+jobs:
+    build-and-test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v6
+
+            - name: Build docker image
+              run : docker build -t k8s-fastapi:ci
+            
+            - name: Start container
+              run : -d -p 8000:8000 --name api k8s-fastapi:ci
+
+            - name: Smoke test endpoints
+              run: |
+                for i in $(seq 1 15); do
+                    curl -fsS http://localhost:8000/health && break
+                    sleep 2
+                done
+                curl -fsS http://localhost:8000/health
+                curl -fsS http://localhost:8000/ready
+
+            - name: Show logs on failure
+              if: failure()
+              run: docker logs api
+
+            - name: Clean up
+              if: always()
+              run: docker rm -f api
