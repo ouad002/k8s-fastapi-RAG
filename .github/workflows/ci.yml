@@ -33,3 +33,40 @@ jobs:
             - name: Clean up
               if: always()
               run: docker rm -f api
+    k8s-test:
+        needs: build-and-test
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v6
+
+            - name: Create kind cluster
+              uses: helm/kind-action@v1
+              with:
+                cluster_name: ci
+
+            - name: Build image with the tag used in the manifest
+              run: docker build -t docker.io/library/k8s-fastapi:v1 .
+
+            - name: Load image into kind
+              run: kind load docker-image docker.io/library/k8s-fastapi:v1 --name ci
+
+            - name: Apply manifests
+              run: kubectl apply -f k8s/
+
+            - name: Wait for rollout
+              run: kubectl rollout status deployment/fastapi --timeout=120s
+
+            - name: Smoke test through the Service
+              run: |
+                    kubectl port-forward service/fastapi 8000:8000 &
+                    sleep 5
+                    curl -fsS http://localhost:8000/health
+                    curl -fsS http://localhost:8000/ready
+
+            - name: Debug info on failure
+              if: failure()
+              run: |
+                  kubectl get all
+                  kubectl describe pods
+                  kubectl logs deployment/fastapi --tail=50
