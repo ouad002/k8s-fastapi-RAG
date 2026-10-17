@@ -72,7 +72,7 @@ jobs:
                   kubectl logs deployment/fastapi --tail=50
     publish:
         needs: [build-and-test, k8s-test]
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
         permissions:
             contents: read
