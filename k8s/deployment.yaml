@@ -16,8 +16,8 @@ spec:
     spec:
       containers:
         - name: fastapi
-          image: docker.io/library/k8s-fastapi:v1
-          imagePullPolicy: Never
+          image: ghcr.io/ouad002/k8s-fastapi-rag:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
           readinessProbe:
