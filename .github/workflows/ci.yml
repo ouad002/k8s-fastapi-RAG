@@ -46,11 +46,18 @@ jobs:
                 cluster_name: ci
 
             - name: Build image with the tag used in the manifest
-              run: docker build -t docker.io/library/k8s-fastapi:v1 .
+              run: 
+                REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+                docker build -t ghcr.io/${REPO_LOWER}:latest .
 
             - name: Load image into kind
-              run: kind load docker-image docker.io/library/k8s-fastapi:v1 --name ci
-
+              run: 
+                REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+                docker build -t ghcr.io/${REPO_LOWER}:latest .
+            - name: Temporarily set manifest to use latest tag for testing
+              run: |
+                REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+                sed -i "s|image: ghcr.io/.*|image: ghcr.io/${REPO_LOWER}:latest|g" k8s/deployment.yaml
             - name: Apply manifests
               run: kubectl apply -f k8s/
 
