@@ -108,7 +108,8 @@ jobs:
               run: |
                 # The metadata-action creates tags like: ghcr.io/ouad002/k8s-fastapi-rag:sha-1234567
                 # We extract just the sha tag to update the manifest
-                NEW_IMAGE_TAG="ghcr.io/${{ github.repository }}:sha-${GITHUB_SHA::7}"
+                REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+                NEW_IMAGE_TAG="ghcr.io/${REPO_LOWER}:sha-${GITHUB_SHA::7}"
                 
                 # Use sed to replace the existing image line in deployment.yaml
                 sed -i "s|image: ghcr.io/.*|image: $NEW_IMAGE_TAG|g" k8s/deployment.yaml
